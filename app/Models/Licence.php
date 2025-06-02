@@ -72,4 +72,15 @@ class Licence extends Model
             default => 'Unknown'
         };
     }
+
+    // 📆 Vérifie si elle est expirée
+    public function isExpired()
+    {
+        return now()->greaterThan($this->end_date);
+    }
+
+    public function isActive()
+    {
+        return $this->status === self::STATUS_ACTIVE && !$this->isExpired();
+    }
 }

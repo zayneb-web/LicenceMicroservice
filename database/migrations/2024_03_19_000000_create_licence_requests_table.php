@@ -18,7 +18,7 @@ return new class extends Migration
             $table->dateTime('validated_at')->nullable();
             $table->dateTime('rejected_at')->nullable();
             $table->text('rejection_reason')->nullable();
-            $table->foreignId('validated_by')->nullable()->constrained('users');
+            $table->foreignId('validated_by')->nullable();
             $table->decimal('price', 10, 2);
             $table->integer('duration_months');
             $table->timestamps();
