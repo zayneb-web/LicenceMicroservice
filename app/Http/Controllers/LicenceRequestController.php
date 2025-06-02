@@ -50,7 +50,13 @@ class LicenceRequestController extends Controller
             'rejection_reason' => 'nullable|string',
         ]);
 
+        $oldStatus = $licenceRequest->status;
         $licenceRequest->update($data);
+
+        // Envoyer la notification si le statut a changé vers validated ou rejected
+        if (($data['status'] === 'validated' || $data['status'] === 'rejected') && $oldStatus !== $data['status']) {
+            $licenceRequest->notify(new \App\Notifications\LicenceRequestStatusUpdated($licenceRequest));
+        }
 
         return response()->json($licenceRequest);
     }
