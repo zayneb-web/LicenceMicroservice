@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 
 class LicenceRequest extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     // Types de licences possibles
     const TYPE_BASIC = 'basic';
@@ -77,5 +78,15 @@ class LicenceRequest extends Model
             self::TYPE_ENTERPRISE => 'Enterprise',
             default => 'Unknown'
         };
+    }
+
+    /**
+     * Route notifications for the mail channel.
+     *
+     * @return string
+     */
+    public function routeNotificationForMail()
+    {
+        return $this->company_email;
     }
 } 
