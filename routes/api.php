@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LicenceRequestController;
 use App\Http\Controllers\LicenceController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\StripeWebhookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,3 +37,18 @@ Route::get('/licences/check/{mongoCompanyId}', [LicenceController::class, 'check
 Route::get('/licences/{licence}/status', [LicenceController::class, 'status']); //get licences qui sont activé
 
 Route::delete('/licences/{licence}', [LicenceController::class, 'destroy']);
+// Routes pour les paiements
+Route::prefix('payments')->group(function () {
+    Route::get('/', [PaymentController::class, 'index']);
+    Route::post('/', [PaymentController::class, 'store']);
+    Route::get('/{id}', [PaymentController::class, 'show']);
+    Route::put('/{id}', [PaymentController::class, 'update']);
+    Route::delete('/{id}', [PaymentController::class, 'destroy']);
+    Route::put('/{id}/status', [PaymentController::class, 'updateStatus']);
+    Route::get('/licence/{licenceId}', [PaymentController::class, 'getLicencePayments']);
+});
+
+// Route pour le webhook Stripe
+Route::post('stripe/webhook', [StripeWebhookController::class, 'handleWebhook']);
+
+Route::get('/pay', [StripeWebhookController::class, 'pay'])->name('pay');

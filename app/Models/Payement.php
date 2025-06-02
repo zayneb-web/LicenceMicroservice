@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Payment extends Model
+class Payement extends Model
 {
     use HasFactory;
 
@@ -19,6 +19,7 @@ class Payment extends Model
         'status',
         'currency',
         'notes'
+        
     ];
 
     protected $casts = [
@@ -31,6 +32,7 @@ class Payment extends Model
     const STATUS_SUCCEEDED = 'succeeded';
     const STATUS_FAILED = 'failed';
     const STATUS_REFUNDED = 'refunded';
+    const STATUS_PENDING_VERIFICATION = 'pending_verification'; 
 
     public function licence()
     {
