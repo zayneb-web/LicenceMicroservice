@@ -7,9 +7,8 @@ use Stripe\Checkout\Session;
 use App\Models\Payement;
 use App\Models\Licence;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\PaymentSuccess;
-use Illuminate\Support\Str;
+use App\Notifications\PaymentStatusUpdated;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 
 class StripeController extends Controller
@@ -32,6 +31,7 @@ class StripeController extends Controller
                     'currency' => 'eur',
                     'product_data' => [
                         'name' => 'Licence ' . $licence->type,
+                        'description' => 'Licence valide pour ' . $licence->duration_months . ' mois'
                     ],
                     'unit_amount' => $licence->price * 100,
                 ],
@@ -43,11 +43,8 @@ class StripeController extends Controller
             'metadata' => [
                 'licence_id' => $licence->id
             ],
-            'customer_email' => $request->email ?? ($licence->user ? $licence->user->email : null),
-            'billing_address_collection' => 'required',
-            'shipping_address_collection' => [
-                'allowed_countries' => ['FR', 'BE', 'CH', 'CA', 'MA', 'TN', 'DZ'],
-            ],
+            'customer_email' => $licence->company_email,
+      
         ]);
 
         return redirect($session->url);
@@ -58,20 +55,12 @@ class StripeController extends Controller
         try {
             $session = $this->stripe->checkout->sessions->retrieve($request->session_id);
             $licenceId = $session->metadata->licence_id ?? null;
+            
             if (!$licenceId) {
                 throw new \Exception('Licence ID not found in session metadata');
             }
+            
             $licence = Licence::findOrFail($licenceId);
-
-            // Generate verification code
-            $verificationCode = Str::random(6);
-
-            // Update the licence status
-            $licence->update([
-                'status' => Licence::STATUS_PENDING_VERIFICATION,
-                'verification_code' => $verificationCode,
-                'stripe_checkout_id' => $session->id
-            ]);
 
             // Create the payment
             $payment = Payement::create([
@@ -81,27 +70,27 @@ class StripeController extends Controller
                 'payment_method' => 'stripe',
                 'stripe_payment_intent_id' => $session->payment_intent,
                 'stripe_checkout_session_id' => $session->id,
-                'status' => Payement::STATUS_PENDING_VERIFICATION,
+                'status' => Payement::STATUS_SUCCEEDED,
                 'currency' => $session->currency
             ]);
 
-            // Get customer email from Stripe session
-            $customerEmail = $session->customer_email;
-            
-            // If no customer email in session, try to get it from the licence's user
-            if (!$customerEmail && $licence->user) {
-                $customerEmail = $licence->user->email;
-            }
+            // Update the licence status
+            $licence->update([
+                'status' => Licence::STATUS_PAID,
+                'activated_at' => now(),
+                'stripe_checkout_id' => $session->id
+            ]);
 
-            // Send confirmation email if we have an email address
-            if ($customerEmail) {
-                Mail::to($customerEmail)->send(new PaymentSuccess($payment, $licence, $verificationCode));
+            // Envoyer la notification de paiement
+            if ($licence->company_email) {
+                Notification::route('mail', $licence->company_email)
+                    ->notify(new PaymentStatusUpdated($payment, $licence));
             }
 
             return view('payment.success', [
                 'licence' => $licence,
-                'session' => $session,
-                'verificationCode' => $verificationCode
+                'payment' => $payment,
+                'session' => $session
             ]);
         } catch (\Exception $e) {
             return redirect()->route('payment.error')->with('error', $e->getMessage());
@@ -139,13 +128,13 @@ class StripeController extends Controller
         ]);
 
         // Update payment status
-        $payment = Payement::where('licence_id', $licence->id)
-            ->where('status', Payement::STATUS_PENDING_VERIFICATION)
+        $payment = Payment::where('licence_id', $licence->id)
+            ->where('status', Payment::STATUS_PENDING_VERIFICATION)
             ->first();
 
         if ($payment) {
             $payment->update([
-                'status' => Payement::STATUS_SUCCEEDED
+                'status' => Payment::STATUS_SUCCEEDED
             ]);
         }
 
@@ -182,23 +171,34 @@ class StripeController extends Controller
                 return response()->json(['error' => 'Licence non trouvée'], 404);
             }
 
-            // Créer l'enregistrement de paiement
-            Payment::create([
-                'licence_id' => $licence->id,
-                'amount' => $session->amount_total / 100,
-                'payment_date' => now(),
-                'payment_method' => 'stripe',
-                'stripe_payment_intent_id' => $session->payment_intent,
-                'stripe_checkout_session_id' => $session->id,
-                'status' => Payment::STATUS_SUCCEEDED,
-                'currency' => $session->currency
-            ]);
+            // Vérifier si le paiement existe déjà
+            $existingPayment = Payment::where('stripe_checkout_session_id', $session->id)->first();
+            
+            if (!$existingPayment) {
+                // Créer l'enregistrement de paiement
+                $payment = Payment::create([
+                    'licence_id' => $licence->id,
+                    'amount' => $session->amount_total / 100,
+                    'payment_date' => now(),
+                    'payment_method' => 'stripe',
+                    'stripe_payment_intent_id' => $session->payment_intent,
+                    'stripe_checkout_session_id' => $session->id,
+                    'status' => Payment::STATUS_SUCCEEDED,
+                    'currency' => $session->currency
+                ]);
 
-            // Mettre à jour le statut de la licence
-            $licence->update([
-                'status' => Licence::STATUS_PAID,
-                'activated_at' => now()
-            ]);
+                // Mettre à jour le statut de la licence
+                $licence->update([
+                    'status' => Licence::STATUS_PAID,
+                    'activated_at' => now()
+                ]);
+
+                // Envoyer la notification de paiement
+                if ($licence->company_email) {
+                    Notification::route('mail', $licence->company_email)
+                        ->notify(new PaymentStatusUpdated($payment, $licence));
+                }
+            }
         }
 
         return response()->json(['status' => 'success']);

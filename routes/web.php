@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StripeController;
 use App\Models\Licence;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,16 +33,3 @@ Route::get('/payment/error', function () {
 })->name('payment.error');
 Route::post('/verify-payment', [StripeController::class, 'verifyPayment'])->name('payment.verify');
 
-
-// Route de test pour la configuration email
-Route::get('/test-email', function () {
-    try {
-        Mail::raw('Test email from Laravel', function($message) {
-            $message->to('rajhi.zeineb@esprit.tn')
-                    ->subject('Test Email');
-        });
-        return 'Email envoyé avec succès !';
-    } catch (\Exception $e) {
-        return 'Erreur lors de l\'envoi de l\'email : ' . $e->getMessage();
-    }
-});
