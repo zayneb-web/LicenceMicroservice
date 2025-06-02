@@ -14,6 +14,20 @@ class LicenceRequest extends Model
     const TYPE_PROFESSIONAL = 'professional';
     const TYPE_ENTERPRISE = 'enterprise';
 
+    const PRICE_BASIC = 50;
+    const PRICE_PROFESSIONAL = 100;
+    const PRICE_ENTERPRISE = 150;
+
+    public static function getPriceForType($type)
+    {
+        return match($type) {
+            self::TYPE_BASIC => self::PRICE_BASIC,
+            self::TYPE_PROFESSIONAL => self::PRICE_PROFESSIONAL,
+            self::TYPE_ENTERPRISE => self::PRICE_ENTERPRISE,
+            default => 0
+        };
+    }
+
     protected $fillable = [
         'company_name', 
         'company_email', 
