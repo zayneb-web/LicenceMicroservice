@@ -15,7 +15,10 @@ class LicenceRequest extends Model
     const TYPE_ENTERPRISE = 'enterprise';
 
     protected $fillable = [
-        'mongo_company_id', // ID de la company dans MongoDB
+        'company_name', 
+        'company_email', 
+        'company_phone',
+        'company_address', 
         'type',
         'description',
         'status',
@@ -25,7 +28,7 @@ class LicenceRequest extends Model
         'rejection_reason',
         'validated_by',
         'price',
-        'duration_months'
+        'duration_months',
     ];
 
     protected $casts = [
