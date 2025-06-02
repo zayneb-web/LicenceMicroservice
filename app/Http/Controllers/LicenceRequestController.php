@@ -21,7 +21,7 @@ class LicenceRequestController extends Controller
             'company_address' => 'required|string',
             'type' => 'required|in:basic,professional,enterprise',
             'description' => 'nullable|string',
-            'price' => 'required|numeric',
+            'price' => 'required|in:50,100,150',
             'duration_months' => 'required|integer',
             'status' => 'pending|string',
             'requested_at' => 'nullable|date',
@@ -44,10 +44,10 @@ class LicenceRequestController extends Controller
     {
         $data = $request->validate([
             'status' => 'required|in:pending,validated,rejected,expired',
-            'validated_by' => 'nullable|integer',
+            'validated_by' => 'nullable|exists:users,id',
             'validated_at' => 'nullable|date',
             'rejected_at' => 'nullable|date',
-            'rejection_reason' => 'nullable|string',
+            'rejection_reason' => 'nullable|string|required_if:status,rejected',
         ]);
 
         $oldStatus = $licenceRequest->status;

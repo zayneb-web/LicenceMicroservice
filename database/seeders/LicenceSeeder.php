@@ -20,7 +20,8 @@ class LicenceSeeder extends Seeder
             'price' => Licence::getPriceForType(Licence::TYPE_BASIC),
             'description' => 'Licence de test expirée',
             'mongo_company_id' => 'test-company-1',
-            'license_key' => 'LIC-' . uniqid()
+            'license_key' => 'LIC-' . uniqid(),
+            'company_email' => 'company1@example.com'
         ]);
 
         // Créer une licence active
@@ -33,7 +34,8 @@ class LicenceSeeder extends Seeder
             'price' => Licence::getPriceForType(Licence::TYPE_PROFESSIONAL),
             'description' => 'Licence de test active',
             'mongo_company_id' => 'test-company-2',
-            'license_key' => 'LIC-' . uniqid()
+            'license_key' => 'LIC-' . uniqid(),
+            'company_email' => 'company2@example.com'
         ]);
 
         // Créer une licence expirée
@@ -46,7 +48,8 @@ class LicenceSeeder extends Seeder
             'price' => Licence::getPriceForType(Licence::TYPE_ENTERPRISE),
             'description' => 'Licence de test expirée',
             'mongo_company_id' => 'test-company-3',
-            'license_key' => 'LIC-' . uniqid()
+            'license_key' => 'LIC-' . uniqid(),
+            'company_email' => 'company3@example.com'
         ]);
     }
 } 
