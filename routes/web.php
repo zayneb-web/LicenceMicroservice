@@ -32,4 +32,6 @@ Route::get('/payment/error', function () {
     return view('payment.error');
 })->name('payment.error');
 Route::post('/verify-payment', [StripeController::class, 'verifyPayment'])->name('payment.verify');
+Route::get('/payment/verify', [StripeController::class, 'verify'])->name('payment.verify');
+Route::post('/payment/confirm-verification', [StripeController::class, 'confirmVerification'])->name('payment.confirm-verification');
 
