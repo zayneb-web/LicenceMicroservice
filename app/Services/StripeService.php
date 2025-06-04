@@ -103,8 +103,4 @@ class StripeService
 
         return false;
     }
-<<<<<<< Updated upstream
 }
-=======
-} 
->>>>>>> Stashed changes

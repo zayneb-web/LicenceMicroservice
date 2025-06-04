@@ -44,7 +44,7 @@ class LicenceRequestStatusUpdated extends Notification implements ShouldQueue
                    ->greeting('Bonjour,')
                    ->line('Nous sommes heureux de vous informer que votre demande de licence a été validée.')
                    ->line('Type de licence : ' . $this->licenceRequest->type)
-                   ->line('Prix : ' . $this->licenceRequest->price . ' €')
+                   ->line('Prix : ' . $this->licenceRequest->price . ' DT')
                    ->line('Durée : ' . $this->licenceRequest->duration_months . ' mois')
                    ->action('Voir les détails', url('/licences'))
                    ->line('Merci de votre confiance !');
