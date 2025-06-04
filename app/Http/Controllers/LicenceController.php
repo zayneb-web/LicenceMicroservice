@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Licence;
+use App\Models\LicenceRequest;
 use Illuminate\Http\Request;
 
 class LicenceController extends Controller
@@ -17,7 +18,7 @@ class LicenceController extends Controller
         $data = $request->validate([
             'licence_request_id' => 'required|exists:licence_requests,id',
             'type' => 'required|in:basic,professional,enterprise',
-            'status' => 'required|in:pending,validated,paid,active,expired,cancelled',
+            'status' => 'required|in:pending,paid,expired,cancelled',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'price' => 'required|numeric',
@@ -33,6 +34,20 @@ class LicenceController extends Controller
 
         $licence = Licence::create($data);
 
+        // Mettre à jour le statut de la demande de licence
+        $licenceRequest = LicenceRequest::find($data['licence_request_id']);
+        $oldStatus = $licenceRequest->status;
+        
+        $licenceRequest->update([
+            'status' => 'validated',
+            'validated_at' => now(),
+        ]);
+
+        // Envoyer la notification si le statut a changé
+        if ($oldStatus !== 'validated') {
+            $licenceRequest->notify(new \App\Notifications\LicenceRequestStatusUpdated($licenceRequest));
+        }
+
         return response()->json($licence, 201);
     }
 
@@ -44,7 +59,7 @@ class LicenceController extends Controller
     public function update(Request $request, Licence $licence)
     {
         $data = $request->validate([
-            'status' => 'sometimes|in:pending,validated,paid,active,expired,cancelled',
+            'status' => 'sometimes|in:pending,paid,expired,cancelled',
             'start_date' => 'sometimes|date',
             'end_date' => 'sometimes|date|after:start_date',
             'price' => 'sometimes|numeric',
@@ -111,9 +126,9 @@ public function checkLicence($mongoCompanyId)
         ]);
     }
 
-    if ($licence->isActive()) {
+    if ($licence->isPaid()) {
         return response()->json([
-            'status' => 'active',
+            'status' => 'paid',
             'message' => 'Votre licence est active'
         ]);
     }
