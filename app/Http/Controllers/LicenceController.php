@@ -27,6 +27,7 @@ class LicenceController extends Controller
             'validated_at' => 'nullable|date',
             'activated_at' => 'nullable|date',
             'mongo_company_id' => 'nullable|string',
+            'company_email' => 'nullable|email',
         ]);
 
         $data['license_key'] = $data['license_key'] ?? strtoupper(uniqid('LIC-'));
