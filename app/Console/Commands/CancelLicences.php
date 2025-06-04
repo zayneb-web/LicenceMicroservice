@@ -10,7 +10,7 @@ use Carbon\Carbon;
 class CancelLicences extends Command
 {
     protected $signature = 'licences:cancel';
-    protected $description = 'Cancel and delete licences that are older than 30 days';
+    protected $description = 'Cancel pending licences older than 7 days';
 
     public function __construct()
     {
@@ -19,26 +19,21 @@ class CancelLicences extends Command
 
     public function handle()
     {
-        $thirtyDaysAgo = Carbon::now()->subDays(30);
+        $sevenDaysAgo = Carbon::now()->subDays(7);
         
-        $licencesToCancel = Licence::where('created_at', '<', $thirtyDaysAgo)
-            ->where('status', '!=', 'canceled')
+        // Cancel pending/pending_verification licences older than 7 days
+        $licencesToCancel = Licence::where('created_at', '<', $sevenDaysAgo)
+            ->whereIn('status', ['pending', 'pending_verification'])
             ->get();
 
         foreach ($licencesToCancel as $licence) {
-            try {
-                // Supprimer d'abord les paiements associés
-                Payement::where('licence_id', $licence->id)->delete();
-                
-                // Ensuite supprimer la licence
-                $licence->delete();
-                
-                $this->info("Successfully canceled and deleted Licence ID {$licence->id}");
-            } catch (\Exception $e) {
-                $this->error("Error processing Licence ID {$licence->id}: " . $e->getMessage());
-            }
+            $licence->update([
+                'status' => 'cancelled'
+            ]);
+
+            $this->info("Licence ID {$licence->id} has been cancelled (was {$licence->getOriginal('status')}) - pending for more than 7 days.");
         }
 
-        $this->info("Processed {$licencesToCancel->count()} licences.");
+        $this->info("Cancelled {$licencesToCancel->count()} pending licences.");
     }
 } 

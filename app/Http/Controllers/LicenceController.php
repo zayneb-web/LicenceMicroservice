@@ -57,6 +57,14 @@ class LicenceController extends Controller
         return $licence->load('licenceRequest', 'payments');
     }
 
+    public function showbyid($id) {
+        $licence = Licence::find($id);
+        if (!$licence) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+        return response()->json($licence);
+    }
+
     public function update(Request $request, Licence $licence)
     {
         $data = $request->validate([
@@ -139,4 +147,5 @@ public function checkLicence($mongoCompanyId)
         'message' => 'Votre licence n\'est pas active'
     ]);
 }
+
 }

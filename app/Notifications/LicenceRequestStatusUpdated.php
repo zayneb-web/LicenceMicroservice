@@ -44,9 +44,9 @@ class LicenceRequestStatusUpdated extends Notification implements ShouldQueue
                    ->greeting('Bonjour,')
                    ->line('Nous sommes heureux de vous informer que votre demande de licence a été validée.')
                    ->line('Type de licence : ' . $this->licenceRequest->type)
-                   ->line('Prix : ' . $this->licenceRequest->price . ' €')
+                   ->line('Prix : ' . $this->licenceRequest->price . ' DT')
                    ->line('Durée : ' . $this->licenceRequest->duration_months . ' mois')
-                   ->action('Voir les détails', url('/licences'))
+                   ->action('Voir les détails', url('http://localhost:3000/checkout'))
                    ->line('Merci de votre confiance !');
         } else if ($this->licenceRequest->status === 'rejected') {
             $message->subject('Votre demande de licence a été rejetée')
@@ -55,8 +55,12 @@ class LicenceRequestStatusUpdated extends Notification implements ShouldQueue
                    ->line('Raison : ' . ($this->licenceRequest->rejection_reason ?? 'Non spécifiée'))
                    ->action('Contacter le support', url('/contact'))
                    ->line('N\'hésitez pas à nous contacter pour plus d\'informations.');
-        }
-
+        } else if ($this->licenceRequest->status === 'expired') {
+            $message->subject('Votre licence a expiré')
+                   ->greeting('Bonjour,')
+                   ->line('Nous sommes en train de vérifier votre demande de licence.')
+                   ->line('N\'hésitez pas à nous contacter pour plus d\'informations.');
+        } 
         return $message;
     }
 

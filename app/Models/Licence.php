@@ -99,4 +99,9 @@ class Licence extends Model
             default => 0
         };
     }
+
+    public function isAlmostExpired($days = 7)
+    {
+        return !$this->isExpired() && now()->diffInDays($this->end_date, false) <= $days;
+    }
 }

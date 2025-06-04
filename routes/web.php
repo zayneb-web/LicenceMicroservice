@@ -1,10 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\StripeController;
 use App\Models\Licence;
+use App\Http\Controllers\LicenceRequestController;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
+use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\StripeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,16 +24,20 @@ Route::get('/', function () {
     return view('welcome', compact('licences'));
 });
 
+
 // Route::resource('licencesrequest', LicenceRequestController::class);
+
 // Routes pour Stripe
-Route::post('/checkout', [StripeController::class, 'checkout'])->name('checkout');
 Route::get('/payment/success', [StripeController::class, 'success'])->name('payment.success');
 Route::get('/payment/cancel', [StripeController::class, 'cancel'])->name('payment.cancel');
-Route::post('/stripe/webhook', [StripeController::class, 'webhook'])->name('stripe.webhook');
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'webhook'])->name('stripe.webhook');
+Route::post('/checkout', [StripeController::class, 'checkout'])->name('checkout');
 Route::get('/payment/error', function () {
     return view('payment.error');
 })->name('payment.error');
-Route::post('/verify-payment', [StripeController::class, 'verifyPayment'])->name('payment.verify');
-Route::get('/payment/verify', [StripeController::class, 'verify'])->name('payment.verify');
-Route::post('/payment/confirm-verification', [StripeController::class, 'confirmVerification'])->name('payment.confirm-verification');
 
+Route::post('/payment/confirm-verification', [StripeController::class, 'confirmVerification'])->name('payment.confirm-verification');
+Route::get('/payment/verify', [StripeController::class, 'verify'])->name('payment.verify');
+Route::get('/test-nginx', function () {
+    return 'Nginx OK';
+});

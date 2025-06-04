@@ -52,16 +52,14 @@ document.getElementById('verification-form').addEventListener('submit', async fu
     e.preventDefault();
     
     try {
+        const formData = new FormData(this);
+        
         const response = await fetch(this.action, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
-            body: JSON.stringify({
-                licence_id: this.querySelector('[name="licence_id"]').value,
-                verification_code: this.querySelector('[name="verification_code"]').value
-            })
+            body: formData
         });
 
         const data = await response.json();
@@ -72,6 +70,7 @@ document.getElementById('verification-form').addEventListener('submit', async fu
             alert(data.message || 'Une erreur est survenue');
         }
     } catch (error) {
+        console.error('Erreur:', error);
         alert('Une erreur est survenue lors de la vérification');
     }
 });

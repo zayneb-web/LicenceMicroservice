@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Payment;
+use App\Models\Payement;
 use App\Models\Licence;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -14,7 +14,7 @@ class PaymentController extends Controller
      */
     public function index()
     {
-        $payments = Payment::with('licence')->latest()->paginate(10);
+        $payments = Payement::with('licence')->latest()->paginate(10);
         return response()->json([
             'status' => 'success',
             'data' => $payments
@@ -26,7 +26,7 @@ class PaymentController extends Controller
      */
     public function show($id)
     {
-        $payment = Payment::with('licence')->find($id);
+        $payment = Payement::with('licence')->find($id);
         
         if (!$payment) {
             return response()->json([
@@ -61,13 +61,13 @@ class PaymentController extends Controller
             ], 422);
         }
 
-        $payment = Payment::create([
+        $payment = Payement::create([
             'licence_id' => $request->licence_id,
             'amount' => $request->amount,
             'payment_date' => now(),
             'payment_method' => $request->payment_method,
             'currency' => $request->currency,
-            'status' => Payment::STATUS_PENDING,
+            'status' => Payement::STATUS_PENDING,
             'notes' => $request->notes
         ]);
 
@@ -83,7 +83,7 @@ class PaymentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $payment = Payment::find($id);
+        $payment = Payement::find($id);
 
         if (!$payment) {
             return response()->json([
@@ -118,7 +118,7 @@ class PaymentController extends Controller
      */
     public function destroy($id)
     {
-        $payment = Payment::find($id);
+        $payment = Payement::find($id);
 
         if (!$payment) {
             return response()->json([
@@ -140,21 +140,10 @@ class PaymentController extends Controller
      */
     public function getLicencePayments($licenceId)
     {
-        $licence = Licence::find($licenceId);
+        // Récupère tous les paiements liés à la licence
+        $payments = Payement::where('licence_id', $licenceId)->get();
 
-        if (!$licence) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Licence not found'
-            ], 404);
-        }
-
-        $payments = $licence->payments()->latest()->get();
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $payments
-        ]);
+        return response()->json($payments);
     }
 
     /**
@@ -162,7 +151,7 @@ class PaymentController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
-        $payment = Payment::find($id);
+        $payment = Payement::find($id);
 
         if (!$payment) {
             return response()->json([
@@ -187,7 +176,7 @@ class PaymentController extends Controller
         ]);
 
         // Si le paiement est réussi, on peut mettre à jour le statut de la licence
-        if ($request->status === Payment::STATUS_SUCCEEDED) {
+        if ($request->status === Payement::STATUS_SUCCEEDED) {
             $payment->licence->update([
                 'status' => Licence::STATUS_PAID
             ]);
@@ -199,8 +188,4 @@ class PaymentController extends Controller
             'data' => $payment
         ]);
     }
-<<<<<<< Updated upstream
-}
-=======
 } 
->>>>>>> Stashed changes

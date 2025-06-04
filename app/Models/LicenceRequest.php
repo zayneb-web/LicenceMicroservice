@@ -31,7 +31,8 @@ class LicenceRequest extends Model
 
     protected $fillable = [
         'company_name', 
-        'company_email', 
+        'company_email',
+        'company_manager_email', 
         'company_phone',
         'company_address', 
         'type',

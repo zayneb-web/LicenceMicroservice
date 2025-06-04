@@ -12,11 +12,17 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Vérifie les licences expirées tous les jours à minuit
-        $schedule->command('licences:update-expired')->daily();
-        $schedule->command('licence-requests:expire-pending')->daily();
-        $schedule->command('licences:expire')->daily();
-        $schedule->command('licences:cancel')->daily();
+        // Annuler les licences pending depuis plus de 7 jours (tous les jours à 2h du matin)
+        $schedule->command('licences:cancel')->dailyAt('02:00');
+        
+        // Expirer les licences dont la date de fin est dépassée (tous les jours à 3h du matin)
+        $schedule->command('licences:expire')->dailyAt('03:00');
+        
+        // Expirer les demandes de licence en attente depuis plus d'un mois (tous les jours à 4h du matin)
+        $schedule->command('licence-requests:expire-pending')->dailyAt('04:00');
+        
+        // Mettre à jour les licences expirées (tous les jours à 5h du matin)
+        $schedule->command('licences:update-expired')->dailyAt('05:00');
     }
 
     /**
