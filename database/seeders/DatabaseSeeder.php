@@ -20,7 +20,8 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
-            LicenceSeeder::class
+            LicenceSeeder::class,
+            TestExpiredLicenceRequestSeeder::class,
         ]);
     }
 }

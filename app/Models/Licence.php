@@ -27,10 +27,21 @@ class Licence extends Model
         'stripe_payment_intent_id',
         'activated_at',
         'mongo_company_id',
-        'verification_code'
+        'verification_code',
+        'licence_request_id',
+        'start_date',
+        'end_date',
+        'license_key',
+        'requested_at',
+        'validated_at',
+        'company_email'
     ];
 
     protected $casts = [
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+        'requested_at' => 'datetime',
+        'validated_at' => 'datetime',
         'activated_at' => 'datetime',
         'price' => 'decimal:2'
     ];
@@ -38,14 +49,24 @@ class Licence extends Model
     // Statuts possibles pour une licence
     const STATUS_PENDING = 'pending';
     const STATUS_PAID = 'paid';
-    const STATUS_ACTIVE = 'active';
+    // const STATUS_ACTIVE = 'active';
     const STATUS_EXPIRED = 'expired';
     const STATUS_CANCELLED = 'cancelled';
     const STATUS_PENDING_VERIFICATION = 'pending_verification';
 
-    public function payments()
+    public function licenceRequest()
     {
-        return $this->hasMany(Payment::class);
+        return $this->belongsTo(LicenceRequest::class);
+    }
+
+    public function generateLicenseKey()
+    {
+        return strtoupper(uniqid('LIC-') . bin2hex(random_bytes(4)));
+    }
+    
+    public function payements()
+    {
+        return $this->hasMany(Payement::class);
     }
 
     public function getTypeLabel()
@@ -64,9 +85,9 @@ class Licence extends Model
         return now()->greaterThan($this->end_date);
     }
 
-    public function isActive()
+    public function isPaid()
     {
-        return $this->status === self::STATUS_ACTIVE && !$this->isExpired();
+        return $this->status === self::STATUS_PAID && !$this->isExpired();
     }
 
     public static function getPriceForType($type)

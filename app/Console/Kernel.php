@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     {
         // Vérifie les licences expirées tous les jours à minuit
         $schedule->command('licences:update-expired')->daily();
+        $schedule->command('licence-requests:expire-pending')->daily();
     }
 
     /**
