@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< Updated upstream
 use Stripe\StripeClient;
 use Stripe\Checkout\Session;
 use App\Models\Payement;
@@ -152,3 +153,41 @@ class StripeWebhookController extends Controller
         return false;
     }
 }
+=======
+use App\Services\StripeService;
+use Illuminate\Http\Request;
+use Stripe\Webhook;
+use Stripe\Exception\SignatureVerificationException;
+
+class StripeWebhookController extends Controller
+{
+    protected $stripeService;
+
+    public function __construct(StripeService $stripeService)
+    {
+        $this->stripeService = $stripeService;
+    }
+
+    public function handleWebhook(Request $request)
+    {
+        $payload = $request->getContent();
+        $sig_header = $request->header('Stripe-Signature');
+        $endpoint_secret = config('services.stripe.webhook_secret');
+
+        try {
+            $event = Webhook::constructEvent(
+                $payload, $sig_header, $endpoint_secret
+            );
+        } catch (SignatureVerificationException $e) {
+            return response()->json(['error' => 'Invalid signature'], 400);
+        }
+
+        try {
+            $this->stripeService->handleWebhook($event);
+            return response()->json(['status' => 'success']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+} 
+>>>>>>> Stashed changes

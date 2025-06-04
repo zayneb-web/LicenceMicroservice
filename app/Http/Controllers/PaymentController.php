@@ -199,4 +199,8 @@ class PaymentController extends Controller
             'data' => $payment
         ]);
     }
+<<<<<<< Updated upstream
 }
+=======
+} 
+>>>>>>> Stashed changes
